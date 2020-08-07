@@ -14,12 +14,13 @@ var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	fmt.Printf("MSG: %s\n", msg.Payload())
 }
 
-type mqttMonitor struct {
+// MqttMonitor monitors mqtt... ?
+type MqttMonitor struct {
 	c mqtt.Client
 	s Settings
 }
 
-func (m mqttMonitor) mqttmonitor() {
+func (m MqttMonitor) mqttmonitor() {
 	mqtt.DEBUG = log.New(os.Stdout, "", 0)
 	mqtt.ERROR = log.New(os.Stdout, "", 0)
 	fullPath := fmt.Sprintf("tcp://%s:%d", m.s.Mqtt.Hostname, m.s.Mqtt.Port)

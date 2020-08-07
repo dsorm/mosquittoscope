@@ -21,14 +21,14 @@ type Settings struct {
 
 // NewSettings returns a Settings struct populated with the settings from filename
 // or with default values if the load fails.
-func NewSettings(filename string) Settings {
+func NewSettings(filename string) *Settings {
 	s := Settings{}
 	s.Load(filename)
-	return s
+	return &s
 }
 
 // Load settings from filename into the settings struct
-func (s Settings) Load(filename string) {
+func (s *Settings) Load(filename string) {
 	s.Mqtt.Hostname = "localhost"
 	s.Mqtt.Port = 1443
 	s.Mqtt.Username = "username"
