@@ -10,7 +10,7 @@ import (
 // Settings stores configuration values for mosquittoscope as an alternative
 // to specifying all the configuration on the command line
 type Settings struct {
-	Mqtt struct {
+	MQTT struct {
 		Hostname string
 		Port     int
 		Username string
@@ -29,11 +29,11 @@ func NewSettings(filename string) *Settings {
 
 // Load settings from filename into the settings struct
 func (s *Settings) Load(filename string) {
-	s.Mqtt.Hostname = "localhost"
-	s.Mqtt.Port = 1443
-	s.Mqtt.Username = "username"
-	s.Mqtt.Password = "password"
-	s.Mqtt.ClientID = "mosquittoscope"
+	s.MQTT.Hostname = "localhost"
+	s.MQTT.Port = 1443
+	s.MQTT.Username = "username"
+	s.MQTT.Password = "password"
+	s.MQTT.ClientID = "mosquittoscope"
 
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
