@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"time"
 
 	"./mosquittoscope"
 )
@@ -38,11 +37,16 @@ func main() {
 		s.MQTT.Port = port
 	}
 	m := mosquittoscope.NewMQTTMonitor(s)
+	d := mosquittoscope.NewDisplay(s)
+	d.SetTopicChannel(m.GetTopicChannel())
 
 	if err := m.Subscribe("#"); err != nil {
 		fmt.Printf("%s", err)
 		os.Exit(1)
 	}
 	fmt.Println("Cool beans")
-	time.Sleep(100 * time.Millisecond)
+	var done chan bool
+	// Arguably this doesn't have to be a goroutine, but this is a learning exercise.
+	go d.DisplayLoop(done)
+	<-done
 }

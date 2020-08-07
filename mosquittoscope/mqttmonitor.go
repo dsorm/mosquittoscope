@@ -50,6 +50,8 @@ func (m *MQTTMonitor) publishCallback(client mqtt.Client, msg mqtt.Message) {
 		fmt.Printf("MSG: %s\n", msg.Payload())
 		return
 	}
+	// This feels like witchcraft
+	m.topicChannel <- msg
 }
 
 // Subscribe subscribes to the provided topic.
@@ -63,7 +65,7 @@ func (m *MQTTMonitor) Subscribe(topic string) (err error) {
 
 // GetTopicChannel returns a channel from which received MQTT messages can be... got?
 // I don't know the proper terminology
-func (m *MQTTMonitor) GetTopicChannel() *chan mqtt.Message {
+func (m *MQTTMonitor) GetTopicChannel() chan mqtt.Message {
 	m.topicChannel = make(chan mqtt.Message)
-	return &m.topicChannel
+	return m.topicChannel
 }
