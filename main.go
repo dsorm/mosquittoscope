@@ -15,11 +15,12 @@ var mqttUsername = flag.String("u", "", "MQTT broker username")
 var mqttPassword = flag.String("P", "", "MQTT broker password")
 var mqttHostname = flag.String("h", "", "MQTT broker hostname")
 var mqttPort = flag.String("p", "", "MQTT broker port")
+var settingsFile = flag.String("s", "default.yaml", "Settings file path")
 
 func main() {
 	flag.Parse()
 	fmt.Println(flag.Args())
-	s := mosquittoscope.NewSettings("boop.yaml")
+	s := mosquittoscope.NewSettings(*settingsFile)
 	if len(*mqttUsername) > 0 {
 		s.MQTT.Username = *mqttUsername
 	}
