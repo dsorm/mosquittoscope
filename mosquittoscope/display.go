@@ -53,9 +53,6 @@ func (d *Display) DisplayLoop(done chan bool) {
 MainLoop:
 	for {
 		time.Sleep(1 * time.Millisecond)
-		// if d.c == nil {
-		// 	continue
-		// }
 		select {
 		case msg := <-d.c:
 			d.p.Text = fmt.Sprintf("TOPIC: %s\n", msg.Topic())
