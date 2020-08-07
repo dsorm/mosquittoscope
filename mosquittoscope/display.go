@@ -24,14 +24,15 @@ func (d *Display) SetTopicChannel(c chan mqtt.Message) {
 	d.c = c
 }
 
-// DisplayLoop blocks forever, updating the display and handling user input
+// DisplayLoop blocks, updating the display and handling user input
 func (d *Display) DisplayLoop(done chan bool) {
+	var msg mqtt.Message
 	for {
 		time.Sleep(1 * time.Millisecond)
 		if d.c == nil {
 			continue
 		}
-		msg := <-d.c
+		msg = <-d.c
 		fmt.Printf("TOPIC: %s\n", msg.Topic())
 		fmt.Printf("MSG: %s\n", msg.Payload())
 	}
