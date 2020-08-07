@@ -45,7 +45,7 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println("Cool beans")
-	var done chan bool
+	done := make(chan bool, 1)
 	// Arguably this doesn't have to be a goroutine, but this is a learning exercise.
 	go d.DisplayLoop(done)
 	<-done
