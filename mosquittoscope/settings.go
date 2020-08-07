@@ -30,7 +30,7 @@ func NewSettings(filename string) *Settings {
 // Load settings from filename into the settings struct
 func (s *Settings) Load(filename string) {
 	s.MQTT.Hostname = "localhost"
-	s.MQTT.Port = 1443
+	s.MQTT.Port = 1883
 	s.MQTT.Username = "username"
 	s.MQTT.Password = "password"
 	s.MQTT.ClientID = "mosquittoscope"

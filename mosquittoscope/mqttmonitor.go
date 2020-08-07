@@ -2,6 +2,9 @@ package mosquittoscope
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -13,36 +16,54 @@ var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 
 // MQTTMonitor monitors mqtt... ?
 type MQTTMonitor struct {
-	c mqtt.Client
-	s *Settings
+	c            mqtt.Client
+	s            *Settings
+	topicChannel chan mqtt.Message
 }
 
 // NewMQTTMonitor returns a pointer to an instance of MQTTMonitor
 func NewMQTTMonitor(s *Settings) *MQTTMonitor {
 	m := MQTTMonitor{}
 	m.s = s
-	fmt.Println(s.MQTT.Hostname)
 	// mqtt.DEBUG = log.New(os.Stdout, "", 0)
-	// mqtt.ERROR = log.New(os.Stdout, "", 0)
-	// fullPath := fmt.Sprintf("tcp://%s:%d", m.s.Mqtt.Hostname, m.s.Mqtt.Port)
-	// opts := mqtt.NewClientOptions().AddBroker(fullPath).SetClientID(m.s.Mqtt.ClientID)
-	// opts.SetKeepAlive(2 * time.Second)
-	// opts.SetDefaultPublishHandler(f)
-	// opts.SetPingTimeout(1 * time.Second)
-	// opts.SetUsername(m.s.Mqtt.Username)
-	// opts.SetPassword(m.s.Mqtt.Password)
+	mqtt.ERROR = log.New(os.Stderr, "", 0)
+	fullPath := fmt.Sprintf("tcp://%s:%d", m.s.MQTT.Hostname, m.s.MQTT.Port)
+	opts := mqtt.NewClientOptions().AddBroker(fullPath).SetClientID(m.s.MQTT.ClientID)
+	opts.SetKeepAlive(2 * time.Second)
+	opts.SetDefaultPublishHandler(f)
+	opts.SetPingTimeout(1 * time.Second)
+	opts.SetUsername(m.s.MQTT.Username)
+	opts.SetPassword(m.s.MQTT.Password)
 
-	// m.c = mqtt.NewClient(opts)
-	// if token := m.c.Connect(); token.Wait() && token.Error() != nil {
-	// 	panic(token.Error())
-	// }
-
-	// if token := m.c.Subscribe("#", 0, nil); token.Wait() && token.Error() != nil {
-	// 	fmt.Println(token.Error())
-	// }
-
-	// m.c.Disconnect(250)
-
-	// time.Sleep(1 * time.Second)
+	m.c = mqtt.NewClient(opts)
+	if token := m.c.Connect(); token.Wait() && token.Error() != nil {
+		panic(token.Error())
+	}
+	fmt.Println("Connected to MQTT broker")
 	return &m
+}
+
+func (m *MQTTMonitor) publishCallback(client mqtt.Client, msg mqtt.Message) {
+	if m.topicChannel == nil {
+		fmt.Println("Got message, but no channel, so dropping on floor.")
+		fmt.Printf("TOPIC: %s\n", msg.Topic())
+		fmt.Printf("MSG: %s\n", msg.Payload())
+		return
+	}
+}
+
+// Subscribe subscribes to the provided topic.
+func (m *MQTTMonitor) Subscribe(topic string) (err error) {
+	// m.c.Subscribe(topic, 0, m.publishCallback)
+	if token := m.c.Subscribe("#", 0, m.publishCallback); token.Wait() && token.Error() != nil {
+		return fmt.Errorf("Failed to subscribe to %q", topic)
+	}
+	return nil
+}
+
+// GetTopicChannel returns a channel from which received MQTT messages can be... got?
+// I don't know the proper terminology
+func (m *MQTTMonitor) GetTopicChannel() *chan mqtt.Message {
+	m.topicChannel = make(chan mqtt.Message)
+	return &m.topicChannel
 }
