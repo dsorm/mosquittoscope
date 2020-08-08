@@ -33,22 +33,16 @@ func (d *Display) SetTopicChannel(c chan mqtt.Message) {
 	d.c = c
 }
 
-func allDone(done chan bool) {
-	done <- true
-}
-
 // DisplayLoop blocks, updating the display and handling user input
 func (d *Display) DisplayLoop(done chan bool) {
 	if err := ui.Init(); err != nil {
 		log.Fatalf("failed to initialize termui: %v", err)
 	}
-	defer allDone(done)
+	defer func(d chan bool) { d <- true }(done)
 	defer ui.Close()
 	d.p = widgets.NewParagraph()
 	d.p.Text = "Hello World!"
 	d.p.SetRect(0, 0, 25, 5)
-
-	// var msg mqtt.Message
 
 MainLoop:
 	for {
