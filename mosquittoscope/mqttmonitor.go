@@ -57,7 +57,7 @@ func (m *MQTTMonitor) publishCallback(client mqtt.Client, msg mqtt.Message) {
 // Subscribe subscribes to the provided topic.
 func (m *MQTTMonitor) Subscribe(topic string) (err error) {
 	// m.c.Subscribe(topic, 0, m.publishCallback)
-	if token := m.c.Subscribe("#", 0, m.publishCallback); token.Wait() && token.Error() != nil {
+	if token := m.c.Subscribe("t/#", 0, m.publishCallback); token.Wait() && token.Error() != nil {
 		return fmt.Errorf("Failed to subscribe to %q", topic)
 	}
 	return nil

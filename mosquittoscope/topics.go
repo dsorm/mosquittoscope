@@ -4,20 +4,34 @@ import (
 	"container/list"
 	"strings"
 
-	"github.com/gizak/termui/v3/widgets"
-
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/gizak/termui/v3/widgets"
 )
 
 const messageBufferLength = 10
 
+// Topic defines a tree used to hierarchically store messages received over MQTT
+type Topic struct {
+	Name      string
+	Messages  *list.List
+	Subtopics []*Topic
+	Box       *widgets.Paragraph
+	Height    int
+	Width     int
+}
+
 // NewTopic returns a Topic struct, ready to be populated via UpdateTopics.
 func NewTopic(name string) *Topic {
 	t := Topic{}
-	t.Name = name
-	t.Messages = list.New()
+	t.InitTopic(name)
 	t.Box = widgets.NewParagraph()
 	return &t
+}
+
+// InitTopic initialises a topic
+func (t *Topic) InitTopic(name string) {
+	t.Name = name
+	t.Messages = list.New()
 }
 
 // UpdateTopics receives an MQTT message and populates the hierachy accordingly
@@ -62,4 +76,13 @@ func getTopic(t *Topic, s string) *Topic {
 		return new
 	}
 	return getTopic(new, split[1])
+}
+
+// SubtopicCount returns a recursive count of all subtopics, and sub-subtopics, etc.
+func (t *Topic) SubtopicCount(n int) int {
+	subtopics := 0
+	for _, i := range t.Subtopics {
+		subtopics += i.SubtopicCount(0)
+	}
+	return n + subtopics + len(t.Subtopics) + 1
 }
