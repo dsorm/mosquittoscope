@@ -25,6 +25,8 @@ func NewTopic(name string) *Topic {
 	t := Topic{}
 	t.InitTopic(name)
 	t.Box = widgets.NewParagraph()
+	t.Box.BorderLeft = false
+	// t.Box.BorderTop = false
 	return &t
 }
 
@@ -78,11 +80,17 @@ func getTopic(t *Topic, s string) *Topic {
 	return getTopic(new, split[1])
 }
 
-// SubtopicCount returns a recursive count of all subtopics, and sub-subtopics, etc.
-func (t *Topic) SubtopicCount(n int) int {
-	subtopics := 0
-	for _, i := range t.Subtopics {
-		subtopics += i.SubtopicCount(0)
+// LeafCount returns the number of leaves this topic has
+func (t *Topic) LeafCount(n int) int {
+	subLeafCount := 0
+	// If this topic has a value, it is considered a leaf
+	// even if it also has subtopics.
+	// if t.Messages.Len() > 0 && len(t.Subtopics) == 0{
+	if t.Messages.Len() > 0 {
+		subLeafCount++
 	}
-	return n + subtopics + len(t.Subtopics) + 1
+	for _, i := range t.Subtopics {
+		subLeafCount += i.LeafCount(0)
+	}
+	return n + subLeafCount
 }

@@ -3,6 +3,7 @@ package mosquittoscope
 import (
 	"fmt"
 	"log"
+	"math"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -51,6 +52,20 @@ func (d *Display) DisplayLoop(done chan bool) {
 	// debug.SetRect(20, 10, 30, 30)
 	uiEvents := ui.PollEvents()
 
+	a := widgets.NewParagraph()
+	a.SetRect(1, 30, 11, 35)
+	a.Text = "a"
+	b := widgets.NewParagraph()
+	b.SetRect(11, 30, 15, 35)
+	b.Text = "b"
+	b.BorderLeft = false
+	// b.BorderTop = false
+	c := widgets.NewParagraph()
+	c.SetRect(1, 34, 15, 40)
+	c.Text = "c"
+	c.BorderLeft = false
+	c.BorderTop = false
+
 MainLoop:
 	for {
 		time.Sleep(1 * time.Millisecond)
@@ -69,6 +84,9 @@ MainLoop:
 			}
 		case <-time.After(20 * time.Millisecond):
 			d.updateDisplay()
+			ui.Render(c)
+			ui.Render(b)
+			ui.Render(a)
 			// ui.Render(background)
 		}
 	}
@@ -82,23 +100,24 @@ func (d *Display) updateDisplay() {
 }
 
 func (d *Display) drawTopic(t *Topic, x, y, w int) (int, int) {
-	totalY := 1
-	maxX := 0
+	height := int(math.Max(float64(t.LeafCount(0)*2), 3))
+	d.debug.Text += fmt.Sprintf("%v\n", height)
+	t.Box.SetRect(x, y, x+w, y+height)
+	t.Box.Text = t.Name
+	ui.Render(t.Box)
+
+	totalY := 0
+	columnWidth := 0
 	for _, st := range t.Subtopics {
-		if len(st.Name) > maxX {
-			maxX = len(st.Name)
+		if len(st.Name) > columnWidth {
+			columnWidth = len(st.Name)
 		}
 	}
 	for _, st := range t.Subtopics {
-		_, subY := d.drawTopic(st, x+maxX, y+totalY, maxX+2)
+		_, subY := d.drawTopic(st, x+w, y+totalY, columnWidth+2)
 		totalY += subY
-
 	}
-	d.debug.Text += fmt.Sprintf("Box for topic %q at %d, %d, %d, %d\n", t.Name, x, y, x+w, y+totalY)
 
-	t.Box.SetRect(x, y, x+w, y+totalY)
-	t.Box.Text = t.Name
-	ui.Render(t.Box)
-	return maxX, totalY
+	return 0, totalY + 3
 
 }
