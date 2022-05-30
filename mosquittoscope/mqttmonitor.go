@@ -34,13 +34,19 @@ func NewMQTTMonitor(s *Settings) *MQTTMonitor {
 	opts.SetPingTimeout(1 * time.Second)
 	opts.SetUsername(m.s.MQTT.Username)
 	opts.SetPassword(m.s.MQTT.Password)
-
+	opts.SetConnectionLostHandler(m.connectionLostHandler)
 	m.c = mqtt.NewClient(opts)
 	if token := m.c.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
 	fmt.Println("Connected to MQTT broker")
 	return &m
+}
+
+func (m *MQTTMonitor) connectionLostHandler(_ mqtt.Client, _ error) {
+	// Assume this application will be dockerised. if we lose contact with the broker
+	// just abandon ship. docker-compose will restart the container.
+	log.Fatal("Lost contact with the MQTT broker.")
 }
 
 func (m *MQTTMonitor) publishCallback(client mqtt.Client, msg mqtt.Message) {
@@ -76,8 +82,16 @@ func (m *MQTTMonitor) SubscribeAndGetChannel(topic string) (chan mqtt.Message, e
 	callback := func(client mqtt.Client, msg mqtt.Message) {
 		channel <- msg
 	}
-	if token := m.c.Subscribe("#", 0, callback); token.Wait() && token.Error() != nil {
+	if token := m.c.Subscribe(topic, 0, callback); token.Wait() && token.Error() != nil {
 		return nil, fmt.Errorf("Failed to subscribe to %q", topic)
 	}
 	return channel, nil
+}
+
+// Publish can be used to publish a message to a topic
+func (m *MQTTMonitor) Publish(topic, message string) error {
+	if token := m.c.Publish(topic, 1, false, message); token.Wait() && token.Error() != nil {
+		return fmt.Errorf("Failed to publish to %q", topic)
+	}
+	return nil
 }
