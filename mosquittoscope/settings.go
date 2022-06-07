@@ -11,11 +11,11 @@ import (
 // to specifying all the configuration on the command line
 type Settings struct {
 	MQTT struct {
-		Hostname string
-		Port     int
-		Username string
-		Password string
-		ClientID string
+    Hostname string `yaml:"hostname"`
+    Port     int    `yaml:"port"`
+    Username string `yaml:"username"`
+    Password string `yaml:"password"`
+    ClientID string `yaml:"clientid"`
 	}
 }
 
