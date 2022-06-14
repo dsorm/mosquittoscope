@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 
-	"./mosquittoscope"
+	"github.com/dsorm/mosquittoscope/mosquittoscope"
 )
 
 var mqttUsername = flag.String("u", "", "MQTT broker username")
